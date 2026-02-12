@@ -5,6 +5,7 @@ Jeu de Sudoku en HTML/CSS/JavaScript avec interface graphique.
 ## Fonctionnalités
 
 - Génération aléatoire d'une grille valide.
+- Cinq niveaux de difficulté : **très facile**, **facile**, **moyen**, **difficile**, **expert**.
 - Trois niveaux de difficulté : **facile**, **moyen**, **dur**.
 - Vérification de la grille remplie.
 - Affichage de la solution.

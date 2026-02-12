@@ -5,6 +5,12 @@ const checkBtn = document.getElementById('check-btn');
 const solveBtn = document.getElementById('solve-btn');
 const statusEl = document.getElementById('status');
 
+const difficultyLevels = {
+  'very-easy': { holes: 30, label: 'très facile' },
+  easy: { holes: 38, label: 'facile' },
+  medium: { holes: 46, label: 'moyen' },
+  hard: { holes: 54, label: 'difficile' },
+  expert: { holes: 60, label: 'expert' },
 const difficultyToHoles = {
   easy: 36,
   medium: 46,
@@ -111,6 +117,7 @@ function createCell(row, col, value) {
 
   input.addEventListener('input', () => {
     input.value = input.value.replace(/[^1-9]/g, '').slice(0, 1);
+    input.classList.remove('error-cell');
     clearStatus();
   });
 
@@ -145,6 +152,165 @@ function clearStatus() {
   setStatus('');
 }
 
+function clearErrorHighlights() {
+  document.querySelectorAll('.cell.error-cell').forEach((cell) => {
+    cell.classList.remove('error-cell');
+  });
+}
+
+function markErrorCell(row, col) {
+  const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+  if (cell && !cell.disabled) {
+    cell.classList.add('error-cell');
+  }
+}
+
+function highlightClueMismatches(board) {
+  for (let row = 0; row < 9; row += 1) {
+    for (let col = 0; col < 9; col += 1) {
+      if (puzzle[row][col] !== 0 && board[row][col] !== puzzle[row][col]) {
+        markErrorCell(row, col);
+      }
+    }
+  }
+}
+
+function highlightDuplicateErrors(board) {
+  for (let row = 0; row < 9; row += 1) {
+    const positions = new Map();
+    for (let col = 0; col < 9; col += 1) {
+      const value = board[row][col];
+      if (!positions.has(value)) {
+        positions.set(value, []);
+      }
+      positions.get(value).push({ row, col });
+    }
+
+    positions.forEach((cells) => {
+      if (cells.length > 1) {
+        cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
+      }
+    });
+  }
+
+  for (let col = 0; col < 9; col += 1) {
+    const positions = new Map();
+    for (let row = 0; row < 9; row += 1) {
+      const value = board[row][col];
+      if (!positions.has(value)) {
+        positions.set(value, []);
+      }
+      positions.get(value).push({ row, col });
+    }
+
+    positions.forEach((cells) => {
+      if (cells.length > 1) {
+        cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
+      }
+    });
+  }
+
+  for (let boxRow = 0; boxRow < 3; boxRow += 1) {
+    for (let boxCol = 0; boxCol < 3; boxCol += 1) {
+      const positions = new Map();
+      for (let row = boxRow * 3; row < boxRow * 3 + 3; row += 1) {
+        for (let col = boxCol * 3; col < boxCol * 3 + 3; col += 1) {
+          const value = board[row][col];
+          if (!positions.has(value)) {
+            positions.set(value, []);
+          }
+          positions.get(value).push({ row, col });
+        }
+      }
+
+      positions.forEach((cells) => {
+        if (cells.length > 1) {
+          cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
+        }
+      });
+    }
+  }
+}
+
+
+function isBoardComplete(board) {
+  for (let row = 0; row < 9; row += 1) {
+    for (let col = 0; col < 9; col += 1) {
+      if (board[row][col] < 1 || board[row][col] > 9) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isBoardValid(board) {
+  for (let row = 0; row < 9; row += 1) {
+    const rowSeen = new Set();
+    const colSeen = new Set();
+
+    for (let i = 0; i < 9; i += 1) {
+      const rowValue = board[row][i];
+      const colValue = board[i][row];
+
+      if (rowSeen.has(rowValue) || colSeen.has(colValue)) {
+        return false;
+      }
+
+      rowSeen.add(rowValue);
+      colSeen.add(colValue);
+    }
+  }
+
+  for (let boxRow = 0; boxRow < 3; boxRow += 1) {
+    for (let boxCol = 0; boxCol < 3; boxCol += 1) {
+      const seen = new Set();
+      for (let r = boxRow * 3; r < boxRow * 3 + 3; r += 1) {
+        for (let c = boxCol * 3; c < boxCol * 3 + 3; c += 1) {
+          const value = board[r][c];
+          if (seen.has(value)) {
+            return false;
+          }
+          seen.add(value);
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+function respectsInitialClues(board) {
+  for (let row = 0; row < 9; row += 1) {
+    for (let col = 0; col < 9; col += 1) {
+      if (puzzle[row][col] !== 0 && board[row][col] !== puzzle[row][col]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function checkBoard() {
+  const currentBoard = readBoardFromUI();
+  clearErrorHighlights();
+
+  if (!isBoardComplete(currentBoard)) {
+    setStatus('La grille est incomplète.', 'error');
+    return;
+  }
+
+  if (!respectsInitialClues(currentBoard)) {
+    highlightClueMismatches(currentBoard);
+    setStatus('La grille ne respecte pas les indices de départ.', 'error');
+    return;
+  }
+
+  if (!isBoardValid(currentBoard)) {
+    highlightDuplicateErrors(currentBoard);
+    setStatus('Il y a des erreurs dans la grille.', 'error');
+    return;
+  }
 function checkBoard() {
   const currentBoard = readBoardFromUI();
 
@@ -173,6 +339,9 @@ function solveBoard() {
 
 function startNewGame() {
   setStatus('Génération de la grille...');
+  clearErrorHighlights();
+  const difficulty = difficultyEl.value;
+  const { holes, label } = difficultyLevels[difficulty];
   const difficulty = difficultyEl.value;
   const holes = difficultyToHoles[difficulty];
 
@@ -180,6 +349,7 @@ function startNewGame() {
     solution = generateSolvedBoard();
     puzzle = createPuzzleFromSolution(solution, holes);
     renderBoard(puzzle);
+    setStatus(`Nouvelle grille (${label}).`);
     setStatus(`Nouvelle grille (${difficulty === 'easy' ? 'facile' : difficulty === 'medium' ? 'moyen' : 'dur'}).`);
   }, 20);
 }
