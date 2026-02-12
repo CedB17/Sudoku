@@ -107,14 +107,13 @@ function createCell(row, col, value) {
 
   if (value !== 0) {
     input.value = value;
-    input.readOnly = true;
+    input.disabled = true;
     input.classList.add('fixed');
   }
 
   input.addEventListener('input', () => {
     input.value = input.value.replace(/[^1-9]/g, '').slice(0, 1);
-    input.classList.remove('error-cell', 'error-duplicate', 'error-clue', 'error-fixed');
-    [...input.classList].filter((className) => className.startsWith('error-digit-')).forEach((className) => input.classList.remove(className));
+    input.classList.remove('error-cell');
     clearStatus();
   });
 
@@ -150,27 +149,15 @@ function clearStatus() {
 }
 
 function clearErrorHighlights() {
-  document.querySelectorAll('.cell').forEach((cell) => {
-    cell.classList.remove('error-cell', 'error-duplicate', 'error-clue', 'error-fixed');
-    [...cell.classList]
-      .filter((className) => className.startsWith('error-digit-'))
-      .forEach((className) => cell.classList.remove(className));
+  document.querySelectorAll('.cell.error-cell').forEach((cell) => {
+    cell.classList.remove('error-cell');
   });
 }
 
-function markErrorCell(row, col, type = 'duplicate', digit = null) {
+function markErrorCell(row, col) {
   const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-  if (!cell) {
-    return;
-  }
-
-  cell.classList.add('error-cell', `error-${type}`);
-  if (type === 'duplicate' && digit !== null) {
-    cell.classList.add(`error-digit-${digit}`);
-  }
-
-  if (cell.classList.contains('fixed')) {
-    cell.classList.add('error-fixed');
+  if (cell && !cell.disabled) {
+    cell.classList.add('error-cell');
   }
 }
 
@@ -178,78 +165,53 @@ function highlightClueMismatches(board) {
   for (let row = 0; row < 9; row += 1) {
     for (let col = 0; col < 9; col += 1) {
       if (puzzle[row][col] !== 0 && board[row][col] !== puzzle[row][col]) {
-        markErrorCell(row, col, 'clue');
+        markErrorCell(row, col);
       }
     }
   }
 }
 
-
-function getBoardValuesFromUI() {
-  const values = Array.from({ length: 9 }, () => Array(9).fill(''));
-  document.querySelectorAll('.cell').forEach((cell) => {
-    const row = Number(cell.dataset.row);
-    const col = Number(cell.dataset.col);
-    values[row][col] = cell.value.trim();
-  });
-  return values;
-}
-
-function highlightDuplicateErrors() {
-  const values = getBoardValuesFromUI();
-
-  function markDuplicateSet(cells, digit) {
-    if (cells.length <= 1) {
-      return;
-    }
-
-    cells.forEach(({ row, col }) => {
-      markErrorCell(row, col, 'duplicate', digit);
-    });
-  }
-
+function highlightDuplicateErrors(board) {
   for (let row = 0; row < 9; row += 1) {
     const positions = new Map();
     for (let col = 0; col < 9; col += 1) {
-      const value = values[row][col];
-      if (!value) {
-        continue;
-      }
+      const value = board[row][col];
       if (!positions.has(value)) {
         positions.set(value, []);
       }
       positions.get(value).push({ row, col });
     }
 
-    positions.forEach((cells, digit) => markDuplicateSet(cells, digit));
+    positions.forEach((cells) => {
+      if (cells.length > 1) {
+        cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
+      }
+    });
   }
 
   for (let col = 0; col < 9; col += 1) {
     const positions = new Map();
     for (let row = 0; row < 9; row += 1) {
-      const value = values[row][col];
-      if (!value) {
-        continue;
-      }
+      const value = board[row][col];
       if (!positions.has(value)) {
         positions.set(value, []);
       }
       positions.get(value).push({ row, col });
     }
 
-    positions.forEach((cells, digit) => markDuplicateSet(cells, digit));
+    positions.forEach((cells) => {
+      if (cells.length > 1) {
+        cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
+      }
+    });
   }
 
   for (let boxRow = 0; boxRow < 3; boxRow += 1) {
     for (let boxCol = 0; boxCol < 3; boxCol += 1) {
       const positions = new Map();
-
       for (let row = boxRow * 3; row < boxRow * 3 + 3; row += 1) {
         for (let col = boxCol * 3; col < boxCol * 3 + 3; col += 1) {
-          const value = values[row][col];
-          if (!value) {
-            continue;
-          }
+          const value = board[row][col];
           if (!positions.has(value)) {
             positions.set(value, []);
           }
@@ -257,7 +219,11 @@ function highlightDuplicateErrors() {
         }
       }
 
-      positions.forEach((cells, digit) => markDuplicateSet(cells, digit));
+      positions.forEach((cells) => {
+        if (cells.length > 1) {
+          cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
+        }
+      });
     }
   }
 }
@@ -337,7 +303,7 @@ function checkBoard() {
   }
 
   if (!isBoardValid(currentBoard)) {
-    highlightDuplicateErrors();
+    highlightDuplicateErrors(currentBoard);
     setStatus('Il y a des erreurs dans la grille.', 'error');
     return;
   }
@@ -371,7 +337,7 @@ solveBtn.addEventListener('click', solveBoard);
 
 document.addEventListener('keydown', (event) => {
   const active = document.activeElement;
-  if (!active || !active.classList.contains('cell') || active.readOnly) {
+  if (!active || !active.classList.contains('cell') || active.disabled) {
     return;
   }
 
