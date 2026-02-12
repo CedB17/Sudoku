@@ -113,7 +113,7 @@ function createCell(row, col, value) {
 
   input.addEventListener('input', () => {
     input.value = input.value.replace(/[^1-9]/g, '').slice(0, 1);
-    input.classList.remove('error-cell', 'error-duplicate', 'error-clue', 'error-fixed');
+    input.classList.remove('error-cell');
     clearStatus();
   });
 
@@ -149,20 +149,15 @@ function clearStatus() {
 }
 
 function clearErrorHighlights() {
-  document.querySelectorAll('.cell').forEach((cell) => {
-    cell.classList.remove('error-cell', 'error-duplicate', 'error-clue', 'error-fixed');
+  document.querySelectorAll('.cell.error-cell').forEach((cell) => {
+    cell.classList.remove('error-cell');
   });
 }
 
-function markErrorCell(row, col, type = 'duplicate') {
+function markErrorCell(row, col) {
   const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-  if (!cell) {
-    return;
-  }
-
-  cell.classList.add('error-cell', `error-${type}`);
-  if (cell.disabled) {
-    cell.classList.add('error-fixed');
+  if (cell && !cell.disabled) {
+    cell.classList.add('error-cell');
   }
 }
 
@@ -170,7 +165,7 @@ function highlightClueMismatches(board) {
   for (let row = 0; row < 9; row += 1) {
     for (let col = 0; col < 9; col += 1) {
       if (puzzle[row][col] !== 0 && board[row][col] !== puzzle[row][col]) {
-        markErrorCell(row, col, 'clue');
+        markErrorCell(row, col);
       }
     }
   }
@@ -189,7 +184,7 @@ function highlightDuplicateErrors(board) {
 
     positions.forEach((cells) => {
       if (cells.length > 1) {
-        cells.forEach(({ row: r, col: c }) => markErrorCell(r, c, 'duplicate'));
+        cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
       }
     });
   }
@@ -206,7 +201,7 @@ function highlightDuplicateErrors(board) {
 
     positions.forEach((cells) => {
       if (cells.length > 1) {
-        cells.forEach(({ row: r, col: c }) => markErrorCell(r, c, 'duplicate'));
+        cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
       }
     });
   }
@@ -226,7 +221,7 @@ function highlightDuplicateErrors(board) {
 
       positions.forEach((cells) => {
         if (cells.length > 1) {
-          cells.forEach(({ row: r, col: c }) => markErrorCell(r, c, 'duplicate'));
+          cells.forEach(({ row: r, col: c }) => markErrorCell(r, c));
         }
       });
     }
