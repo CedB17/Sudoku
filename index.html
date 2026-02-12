@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sudoku</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>Sudoku</h1>
+      <div class="controls">
+        <label for="difficulty">Difficulté :</label>
+        <select id="difficulty" aria-label="Choisir la difficulté">
+          <option value="very-easy">Très facile</option>
+          <option value="easy">Facile</option>
+          <option value="medium" selected>Moyen</option>
+          <option value="hard">Difficile</option>
+          <option value="expert">Expert</option>
+        </select>
+        <button id="new-game-btn" type="button">Nouvelle grille</button>
+        <button id="check-btn" type="button">Vérifier</button>
+        <button id="solve-btn" type="button">Résoudre</button>
+      </div>
+
+      <div id="status" class="status" aria-live="polite"></div>
+
+      <section class="board-wrapper" aria-label="Plateau de Sudoku">
+        <div id="sudoku-board" class="board"></div>
+      </section>
+
+      <p class="hint">Astuce : utilisez les touches 1 à 9 pour remplir les cases.</p>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
