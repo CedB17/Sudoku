@@ -11,6 +11,10 @@ const difficultyLevels = {
   medium: { holes: 46, label: 'moyen' },
   hard: { holes: 54, label: 'difficile' },
   expert: { holes: 60, label: 'expert' },
+const difficultyToHoles = {
+  easy: 36,
+  medium: 46,
+  hard: 54,
 };
 
 let solution = [];
@@ -307,6 +311,23 @@ function checkBoard() {
     setStatus('Il y a des erreurs dans la grille.', 'error');
     return;
   }
+function checkBoard() {
+  const currentBoard = readBoardFromUI();
+
+  for (let row = 0; row < 9; row += 1) {
+    for (let col = 0; col < 9; col += 1) {
+      const value = currentBoard[row][col];
+      if (value === 0) {
+        setStatus('La grille est incomplète.', 'error');
+        return;
+      }
+
+      if (value !== solution[row][col]) {
+        setStatus('Il y a des erreurs dans la grille.', 'error');
+        return;
+      }
+    }
+  }
 
   setStatus('Bravo ! Sudoku résolu 🎉', 'success');
 }
@@ -321,12 +342,15 @@ function startNewGame() {
   clearErrorHighlights();
   const difficulty = difficultyEl.value;
   const { holes, label } = difficultyLevels[difficulty];
+  const difficulty = difficultyEl.value;
+  const holes = difficultyToHoles[difficulty];
 
   setTimeout(() => {
     solution = generateSolvedBoard();
     puzzle = createPuzzleFromSolution(solution, holes);
     renderBoard(puzzle);
     setStatus(`Nouvelle grille (${label}).`);
+    setStatus(`Nouvelle grille (${difficulty === 'easy' ? 'facile' : difficulty === 'medium' ? 'moyen' : 'dur'}).`);
   }, 20);
 }
 
