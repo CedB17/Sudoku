@@ -112,27 +112,9 @@ button:hover {
 }
 
 .cell.error-cell {
-  border-width: 2px;
-}
-
-
-.cell.error-duplicate.error-group-0 { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
-.cell.error-duplicate.error-group-1 { background: #ffedd5; color: #9a3412; border-color: #f97316; }
-.cell.error-duplicate.error-group-2 { background: #fef9c3; color: #854d0e; border-color: #eab308; }
-.cell.error-duplicate.error-group-3 { background: #dcfce7; color: #166534; border-color: #22c55e; }
-.cell.error-duplicate.error-group-4 { background: #d1fae5; color: #065f46; border-color: #10b981; }
-.cell.error-duplicate.error-group-5 { background: #dbeafe; color: #1e3a8a; border-color: #3b82f6; }
-.cell.error-duplicate.error-group-6 { background: #ede9fe; color: #5b21b6; border-color: #8b5cf6; }
-.cell.error-duplicate.error-group-7 { background: #fce7f3; color: #9d174d; border-color: #ec4899; }
-
-.cell.error-clue {
-  background: #fff7ed;
-  color: #9a3412;
-  border-color: #f97316;
-}
-
-.cell.error-fixed {
-  box-shadow: inset 0 0 0 2px rgb(245 158 11 / 40%);
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #ef4444;
 }
 
 .hint {
