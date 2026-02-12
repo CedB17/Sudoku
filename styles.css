@@ -112,9 +112,14 @@ button:hover {
 }
 
 .cell.error-cell {
-  background: #fee2e2;
-  color: #991b1b;
-  border-color: #ef4444;
+  background: color-mix(in srgb, var(--error-accent, #ef4444) 22%, white);
+  color: color-mix(in srgb, var(--error-accent, #ef4444) 70%, #111827);
+  border-color: var(--error-accent, #ef4444);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--error-accent, #ef4444) 50%, white);
+}
+
+.cell.fixed.error-cell {
+  background: color-mix(in srgb, var(--error-accent, #ef4444) 30%, white);
 }
 
 .hint {
